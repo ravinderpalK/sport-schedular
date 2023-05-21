@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <title>Document</title>
+</head>
+
+<body>
+  <div class="grid grid-cols-6">
+    <div class="col-start-3 col-span-2">
+      <%- include('header.ejs') %>
+        <h1 class="py-2 text-2xl">Welcome <%= user.firstName %>
+        </h1>
+        <div>
+          <% if (user.role=="admin" ) { %>
+            <%- include('admin.ejs') %>
+              <% } %>
+        </div>
+        <p class="py-2 text-xl">The following sports are available: </p>
+        <ul>
+          <% for (var i=0; i<sports.length; i++) {%>
+            <li>
+              <a href="" class="underline">
+                <%= sports[i].name %>
+              </a>
+            </li>
+            <% } %>
+        </ul>
+    </div>
+  </div>
+</body>
+
+</html>
