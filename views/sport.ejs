@@ -12,18 +12,21 @@
 <body>
   <div class="grid grid-cols-6">
     <div class="col-start-3 col-span-2">
-      <h1 class="py-2 text-3xl">Create a New Sport</h1>
-      <form action="/sports" method="post">
-        <div>
-          <label for="sportName" class="block">What is this sport's name?</label>
-          <input type="text" name="sportName" id="sportName"
-            class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
-        </div>
-        <div class="py-3">
-          <button type="submit"
-            class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Submit</button>
-        </div>
-      </form>
+      <div>
+        <%- include('header.ejs') %>
+      </div>
+      <div>
+        <h1>
+          <%= sport.name %>
+        </h1>
+      </div>
+      <div>
+        <p>Sessions</p>
+      </div>
+      <div>
+        <a href='/sport/<%=sport.id%>/new_session' class="block underline">Create a new Session</a>
+        <a href="" class="block underline">View previous Session</a>
+      </div>
     </div>
   </div>
 </body>

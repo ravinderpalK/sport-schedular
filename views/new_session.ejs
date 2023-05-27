@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <title>Document</title>
+</head>
+
+<body>
+  <div class="grid grid-cols-6">
+    <div class="col-start-3 col-span-2">
+      <h1 class="py-2 text-3xl">New <%= sport.name %> Session</h1>
+      <form action="/new_session/<%= sport.id %>" method="post">
+        <div>
+          <label for="date" class="block">When will this sport session be held?</label>
+          <input type="date" name="date" id="date"
+            class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
+        </div>
+        <div>
+          <label for="address" class="block">When will this session be played?</label>
+          <input type="text" name="address" id="address"
+            class="border border-gray-300 text-gray-900 rounded p-2 w-full text-sm">
+        </div>
+        <div>
+          <label for="playersName" class="block">Who all will be joining you in this session?(comma seprated)</label>
+          <input type="text" name="playersName" id="playersName"
+            class="border border-gray-300 text-gray-900 rounded p-2 w-full text-sm">
+        </div>
+        <div>
+          <label for="nPlayers" class="block">How many more plyers do you need?</label>
+          <input type="text" name="nPlayers" id="nPlayers"
+            class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
+        </div>
+        <div class="py-3">
+          <button type="submit"
+            class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+
+</html>
