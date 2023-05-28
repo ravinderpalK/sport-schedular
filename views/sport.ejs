@@ -15,17 +15,38 @@
       <div>
         <%- include('header.ejs') %>
       </div>
-      <div>
-        <h1>
-          <%= sport.name %>
-        </h1>
+      <div class="w-full py-2">
+        <div class="inline-block w-2/3">
+          <h1 class="text-5xl text-gray-600 font-semibold">
+            <%= sport.name %>
+          </h1>
+        </div>
+        <div class="inline-block">
+          <a href="" class="px-1 underline">edit</a>
+          <a href="" class="px-1 underline">delete</a>
+        </div>
       </div>
       <div>
-        <p>Sessions</p>
+        <p class="text-gray-800 text-3xl py-2">Upcoming Sessions</p>
+        <ul>
+          <% if (sessions.length==0) { %>
+            <p class="py-1 text-lg">There are no sessions available to join right now. Create one?</p>
+            <%}else { %>
+              <div class="grid grid-cols-2">
+                <% for (var i=0; i<sessions.length; i++) {%>
+                  <div class="border border-gray-400 rounded p-2 my-2 mr-4">
+                    <a href="/sessions/<%= sessions[i].id %>">
+                      <%= sessions[i].date %>
+                    </a>
+                  </div>
+                  <% } %>
+              </div>
+              <% } %>
+        </ul>
       </div>
       <div>
-        <a href='/sport/<%=sport.id%>/new_session' class="block underline">Create a new Session</a>
-        <a href="" class="block underline">View previous Session</a>
+        <a href='/sport/<%=sport.id%>/new_session' class="block underline py-1 text-blue-800">Create a new Session</a>
+        <a href="" class="block underline py-1 text-blue-800">View previous Session</a>
       </div>
     </div>
   </div>

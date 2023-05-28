@@ -16,11 +16,11 @@
       <form action="/new_session/<%= sport.id %>" method="post">
         <div>
           <label for="date" class="block">When will this sport session be held?</label>
-          <input type="date" name="date" id="date"
+          <input type="datetime-local" name="date" id="date"
             class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
         </div>
         <div>
-          <label for="address" class="block">When will this session be played?</label>
+          <label for="address" class="block">Where will this session be played?</label>
           <input type="text" name="address" id="address"
             class="border border-gray-300 text-gray-900 rounded p-2 w-full text-sm">
         </div>

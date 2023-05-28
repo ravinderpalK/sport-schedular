@@ -13,7 +13,7 @@
   <div class="grid grid-cols-6">
     <div class="col-start-3 col-span-2">
       <%- include('header.ejs') %>
-        <h1 class="py-2 text-2xl">Welcome <%= user.firstName %>
+        <h1 class="py-2 text-3xl text-gray-800">Welcome <%= user.firstName %>
         </h1>
         <div>
           <% if (user.role=="admin" ) { %>
@@ -24,7 +24,7 @@
         <ul>
           <% for (var i=0; i<sports.length; i++) {%>
             <li>
-              <a href="sport/<%= sports[i].id %>" class="underline">
+              <a href="sport/<%= sports[i].id %>" class="underline py-2 text-blue-800">
                 <%= sports[i].name %>
               </a>
             </li>
