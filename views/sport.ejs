@@ -35,9 +35,11 @@
               <div class="grid grid-cols-2">
                 <% for (var i=0; i<sessions.length; i++) {%>
                   <div class="border border-gray-400 rounded p-2 my-2 mr-4">
-                    <a href="/sessions/<%= sessions[i].id %>">
-                      <%= sessions[i].date %>
-                    </a>
+                    <div class="flex justify-between">
+                      <a class="" href="/sessions/<%= sessions[i].id %>">
+                        <%= new Date(sessions[i].date).toString().slice(0,21) %>
+                      </a>
+                    </div>
                   </div>
                   <% } %>
               </div>

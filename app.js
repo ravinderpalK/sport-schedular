@@ -184,7 +184,9 @@ app.post(
   async (request, response) => {
     const date = request.body.date;
     const address = request.body.address;
-    const players_name = request.body.playersName;
+    const players_name = request.body.playersName
+      ? request.body.playersName.split(",")
+      : [];
     const req_players = request.body.nPlayers;
     const organiser = request.user.email;
     const sportId = request.params.id;
@@ -226,8 +228,7 @@ app.put(
       console.log(request.params.id);
       const session = await Sessions.getSession(request.params.id);
       let players_name = session.players_name;
-      if (players_name) players_name += ",";
-      players_name += request.user.firstName;
+      players_name.push(request.user.firstName);
       const updatedSession = await Sessions.joinSession(
         request.params.id,
         players_name

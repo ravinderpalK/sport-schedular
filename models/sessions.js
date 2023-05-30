@@ -70,7 +70,7 @@ module.exports = (sequelize, DataTypes) => {
         },
       },
       players_name: {
-        type: DataTypes.TEXT,
+        type: DataTypes.ARRAY(DataTypes.STRING),
       },
       req_players: {
         type: DataTypes.INTEGER,
@@ -83,6 +83,7 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         validate: {
           notEmpty: true,
+          isEmail: true,
         },
       },
       sportId: {

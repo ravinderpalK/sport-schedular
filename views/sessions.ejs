@@ -37,10 +37,10 @@
       <div>
         <p class="py-2 text-2xl">Players</p>
         <div class="grid grid-cols-3 ">
-          <% if (session.players_name=="" ) {%>
+          <% if (session.players_name.length==0 ) {%>
             <p>No one have joined.</p>
             <% } else { %>
-              <% (session.players_name).split(",").forEach(name=> { %>
+              <% (session.players_name).forEach(name=> { %>
                 <div class="border border-gray-400 rounded p-2 my-1 mr-2">
                   <%= name %>
                 </div>
@@ -48,7 +48,7 @@
                   <% } %>
         </div>
         <div>
-          <% var r=(session.players_name).split(",").find((name)=> name==user.firstName) %>
+          <% var r=(session.players_name).find((name)=> name==user.firstName) %>
             <% if (!r) { %>
               <button onclick="joinSession(<%=session.id%>)" class="block underline py-2 text-blue-800">Join the
                 session</button>
