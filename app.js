@@ -134,7 +134,7 @@ app.post("/users", async (request, response) => {
 
 app.get(
   "/sports/new",
-  // connectEnsureLogin.ensureLoggedIn(),
+  connectEnsureLogin.ensureLoggedIn(),
   requireAdmin,
   (request, response) => {
     return response.render("new_sport");
@@ -153,7 +153,7 @@ app.post("/sports", async (request, response) => {
 
 app.get(
   "/sport/:id",
-  // connectEnsureLogin.ensureLoggedIn(),
+  connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
       const sport = await Sports.getSport(request.params.id);
@@ -167,7 +167,7 @@ app.get(
 
 app.get(
   "/sport/:id/new_session",
-  // connectEnsureLogin.ensureLoggedIn(),
+  connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
       const sport = await Sports.getSport(request.params.id);
@@ -180,7 +180,7 @@ app.get(
 
 app.post(
   "/new_session/:id",
-  // connectEnsureLogin.ensureLoggedIn(),
+  connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     const date = request.body.date;
     const address = request.body.address;
@@ -204,14 +204,40 @@ app.post(
   }
 );
 
-app.get("/sessions/:id", async (request, response) => {
-  try {
-    const session = await Sessions.getSession(request.params.id);
-    const sport = await Sports.getSport(session.sportId);
-    response.render("sessions", { sport, session });
-  } catch (err) {
-    console.error(err);
+app.get(
+  "/sessions/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      const session = await Sessions.getSession(request.params.id);
+      const sport = await Sports.getSport(session.sportId);
+      response.render("sessions", { sport, session, user: request.user });
+    } catch (err) {
+      console.error(err);
+    }
   }
-});
+);
+
+app.put(
+  "/sessions/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      console.log(request.params.id);
+      const session = await Sessions.getSession(request.params.id);
+      let players_name = session.players_name;
+      if (players_name) players_name += ",";
+      players_name += request.user.firstName;
+      const updatedSession = await Sessions.joinSession(
+        request.params.id,
+        players_name
+      );
+      return response.json(updatedSession);
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
+    }
+  }
+);
 
 module.exports = app;

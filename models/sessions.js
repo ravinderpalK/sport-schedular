@@ -41,6 +41,17 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+
+    static joinSession(id, names) {
+      return this.update(
+        { players_name: names },
+        {
+          where: {
+            id,
+          },
+        }
+      );
+    }
   }
   Sessions.init(
     {

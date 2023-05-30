@@ -7,6 +7,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/css/tailwind.css">
   <title>Document</title>
+  <script>
+    function joinSession(id) {
+      fetch(`/sessions/${id}`, {
+        method: "put",
+        headers: { "Content-Type": "application/json" },
+      })
+        .then((res) => {
+          if (res.ok) {
+            window.location.reload();
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+  </script>
 </head>
 
 <body>
@@ -33,7 +47,13 @@
                 <% }) %>
                   <% } %>
         </div>
-
+        <div>
+          <% var r=(session.players_name).split(",").find((name)=> name==user.firstName) %>
+            <% if (!r) { %>
+              <button onclick="joinSession(<%=session.id%>)" class="block underline py-2 text-blue-800">Join the
+                session</button>
+              <% } %>
+        </div>
       </div>
     </div>
   </div>
