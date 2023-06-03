@@ -11,25 +11,41 @@ module.exports = (sequelize, DataTypes) => {
     static addSession(
       date,
       address,
-      players_name,
-      req_players,
+      joinedPlayers,
+      reqPlayers,
       organiser,
       sportId
     ) {
       return this.create({
         date,
         address,
-        players_name,
-        req_players,
+        joinedPlayers,
+        reqPlayers,
         organiser,
         sportId,
       });
     }
 
-    static getSportSessions(id) {
+    static getUpcomingSportSessions(id) {
+      const { Op } = require("sequelize");
       return this.findAll({
         where: {
           sportId: id,
+          date: {
+            [Op.gt]: new Date().toISOString(),
+          },
+        },
+      });
+    }
+
+    static getPreviousSportSessions(id) {
+      const { Op } = require("sequelize");
+      return this.findAll({
+        where: {
+          sportId: id,
+          date: {
+            [Op.lt]: new Date().toISOString(),
+          },
         },
       });
     }
@@ -42,9 +58,9 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    static joinSession(id, names) {
+    static updateSession(id, joinedPlayers, reqPlayers) {
       return this.update(
-        { players_name: names },
+        { joinedPlayers, reqPlayers },
         {
           where: {
             id,
@@ -69,10 +85,10 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: true,
         },
       },
-      players_name: {
+      joinedPlayers: {
         type: DataTypes.ARRAY(DataTypes.STRING),
       },
-      req_players: {
+      reqPlayers: {
         type: DataTypes.INTEGER,
         validate: {
           notEmpty: true,

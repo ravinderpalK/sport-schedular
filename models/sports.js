@@ -28,10 +28,17 @@ module.exports = (sequelize, DataTypes) => {
       name: {
         type: DataTypes.TEXT,
         allowNull: false,
+        primaryKey: false,
         unique: true,
         validate: {
           notEmpty: true,
         },
+      },
+      id: {
+        allowNull: false,
+        autoIncrement: true,
+        primaryKey: true,
+        type: DataTypes.INTEGER,
       },
     },
     {

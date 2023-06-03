@@ -12,29 +12,55 @@
 <body>
   <div class="grid grid-cols-6">
     <div class="col-start-3 col-span-2">
+      <div class="text-lg pt-2">
+        <a class="underline" href="/">Home</a>
+        <span> > </span>
+        <a class="underline" href="/sport/<%= sport.id %>">
+          <%=sport.name%>
+        </a>
+        <span> > </span>
+        <a>New Session</a>
+      </div>
       <h1 class="py-2 text-3xl">New <%= sport.name %> Session</h1>
       <form action="/new_session/<%= sport.id %>" method="post">
-        <div>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="py-2">
           <label for="date" class="block">When will this sport session be held?</label>
           <input type="datetime-local" name="date" id="date"
             class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
+          <span class="block text-sm text-red-700">
+            <% if(messages.date ) {%>
+              <%= messages.date %>
+                <% } %>
+          </span>
         </div>
-        <div>
+        <div class="py-2">
           <label for="address" class="block">Where will this session be played?</label>
           <input type="text" name="address" id="address"
             class="border border-gray-300 text-gray-900 rounded p-2 w-full text-sm">
+          <span class="block text-sm text-red-700">
+            <% if(messages.address ) {%>
+              <%= messages.address %>
+                <% } %>
+          </span>
         </div>
-        <div>
-          <label for="playersName" class="block">Who all will be joining you in this session?(comma seprated)</label>
-          <input type="text" name="playersName" id="playersName"
+        <div class="py-2">
+          <label for="playersName" class="block">Who all will be joining you in this session?(comma
+            seprated)</label>
+          <input onkeyup="searchPlayers(this)" type="text" name="playersName" id="playersName"
             class="border border-gray-300 text-gray-900 rounded p-2 w-full text-sm">
         </div>
-        <div>
+        <div class="py-2">
           <label for="nPlayers" class="block">How many more plyers do you need?</label>
           <input type="text" name="nPlayers" id="nPlayers"
             class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
+          <span class="block text-sm text-red-700">
+            <% if(messages.req_players ) {%>
+              <%= messages.req_players %>
+                <% } %>
+          </span>
         </div>
-        <div class="py-3">
+        <div class="py-2">
           <button type="submit"
             class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Submit</button>
         </div>

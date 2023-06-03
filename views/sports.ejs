@@ -12,24 +12,28 @@
 <body>
   <div class="grid grid-cols-6">
     <div class="col-start-3 col-span-2">
-      <%- include('header.ejs') %>
-        <h1 class="py-2 text-3xl text-gray-800">Welcome <%= user.firstName %>
-        </h1>
-        <div>
-          <% if (user.role=="admin" ) { %>
-            <%- include('admin.ejs') %>
-              <% } %>
-        </div>
-        <p class="py-2 text-xl">The following sports are available: </p>
-        <ul>
-          <% for (var i=0; i<sports.length; i++) {%>
-            <li>
-              <a href="sport/<%= sports[i].id %>" class="underline py-2 text-blue-800">
-                <%= sports[i].name %>
-              </a>
-            </li>
+      <h1 class="py-2 text-3xl text-gray-800">Welcome <%= user.firstName %>
+      </h1>
+      <a href="/signout">Signout</a>
+      <div>
+        <% if (user.role=="admin" ) { %>
+          <%- include('admin.ejs') %>
             <% } %>
-        </ul>
+      </div>
+      <% if (sports.length==0) {%>
+        <p class="py-2 text-xl">No sports are available.</p>
+        <% } else {%>
+          <p class="py-2 text-xl">The following sports are available: </p>
+          <ul>
+            <% for (var i=0; i<sports.length; i++) {%>
+              <li>
+                <a href="sport/<%= sports[i].id %>" class="underline py-2 text-blue-800">
+                  <%= sports[i].name %>
+                </a>
+              </li>
+              <% } %>
+          </ul>
+          <% } %>
     </div>
   </div>
 </body>

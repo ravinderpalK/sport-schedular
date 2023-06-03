@@ -7,13 +7,32 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="stylesheet" href="/css/tailwind.css">
   <title>Document</title>
+  <script>
+    let toggle = true;
+    function previousSession(element) {
+      let div = document.getElementById("previousSession");
+      if (toggle) {
+        div.style.display = "block";
+        element.innerHTML = "Hide Previous Sessions"
+      }
+      else {
+        div.style.display = "none";
+        element.innerHTML = "View Previous Sessions"
+      }
+      toggle = !toggle;
+    }
+  </script>
 </head>
 
 <body>
   <div class="grid grid-cols-6">
     <div class="col-start-3 col-span-2">
-      <div>
-        <%- include('header.ejs') %>
+      <div class="text-lg pt-2">
+        <a class="underline" href="/">Home</a>
+        <span> > </span>
+        <a>
+          <%=sport.name%>
+        </a>
       </div>
       <div class="w-full py-2">
         <div class="inline-block w-2/3">
@@ -21,37 +40,66 @@
             <%= sport.name %>
           </h1>
         </div>
-        <div class="inline-block">
-          <a href="" class="px-1 underline">edit</a>
-          <a href="" class="px-1 underline">delete</a>
-        </div>
+        <% if (user.role=="admin" ) {%>
+          <div class="inline-block">
+            <a href="" class="px-1 underline">edit</a>
+            <a href="" class="px-1 underline">delete</a>
+          </div>
+          <% } %>
       </div>
       <div>
         <p class="text-gray-800 text-3xl py-2">Upcoming Sessions</p>
-        <ul>
-          <% if (sessions.length==0) { %>
-            <p class="py-1 text-lg">There are no sessions available to join right now. Create one?</p>
+        <div>
+          <% if (upcomingSessions.length==0) { %>
+            <p class="py-1 text-lg">There are no Sessions available to join right now. Create one?</p>
             <%}else { %>
               <div class="grid grid-cols-2">
-                <% for (var i=0; i<sessions.length; i++) {%>
+                <% for (var i=0; i<upcomingSessions.length; i++) {%>
                   <div class="border border-gray-400 rounded p-2 my-2 mr-4">
                     <div class="flex justify-between">
-                      <a class="" href="/sessions/<%= sessions[i].id %>">
-                        <%= new Date(sessions[i].date).toString().slice(0,21) %>
+                      <a class="" href="/sessions/<%= upcomingSessions[i].id %>">
+                        <%= new Date(upcomingSessions[i].date).toString().slice(4,21) %>
                       </a>
+                      <p>
+                        <%= upcomingSessions[i].reqPlayers %> slots
+                      </p>
                     </div>
                   </div>
                   <% } %>
               </div>
               <% } %>
-        </ul>
+                </ul>
+        </div>
       </div>
       <div>
         <a href='/sport/<%=sport.id%>/new_session' class="block underline py-1 text-blue-800">Create a new Session</a>
-        <a href="" class="block underline py-1 text-blue-800">View previous Session</a>
+        <button onclick="previousSession(this)" class="block underline py-1 text-blue-800" value="">View Previous
+          Session</button>
+        <div class="hidden" id="previousSession">
+          <p class="text-gray-800 text-3xl py-2">Previous Sessions</p>
+          <div>
+            <% if (previousSessions.length==0) { %>
+              <p class="py-1 text-lg">There are no previous available.</p>
+              <%}else { %>
+                <div class="grid grid-cols-2">
+                  <% for (var i=0; i<previousSessions.length; i++) {%>
+                    <div class="border border-gray-400 rounded p-2 my-2 mr-4">
+                      <div class="flex justify-between">
+                        <a class="" href="/sessions/<%= previousSessions[i].id %>">
+                          <%= new Date(previousSessions[i].date).toString().slice(4,21) %>
+                        </a>
+                        <p>
+                          <%= previousSessions[i].reqPlayers %> slots
+                        </p>
+                      </div>
+                    </div>
+                    <% } %>
+                </div>
+                <% } %>
+          </div>
+        </div>
       </div>
     </div>
-  </div>
 </body>
 
 </html>

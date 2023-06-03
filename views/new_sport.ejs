@@ -12,12 +12,23 @@
 <body>
   <div class="grid grid-cols-6">
     <div class="col-start-3 col-span-2">
+      <div class="text-lg pt-2">
+        <a class="underline" href="/">Home</a>
+        <span> > </span>
+        <a>New Sport</a>
+      </div>
       <h1 class="py-2 text-3xl">Create a New Sport</h1>
-      <form action="/sports" method="post">
+      <form action="/sport/new" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div>
           <label for="sportName" class="block">What is this sport's name?</label>
           <input type="text" name="sportName" id="sportName"
             class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
+          <span class="block text-sm text-red-700">
+            <% if(messages.error ) {%>
+              <%= messages.error %>
+                <% } %>
+          </span>
         </div>
         <div class="py-3">
           <button type="submit"

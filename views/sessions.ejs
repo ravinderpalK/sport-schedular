@@ -5,13 +5,20 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
   <link rel="stylesheet" href="/css/tailwind.css">
   <title>Document</title>
   <script>
+    var token = document
+      .querySelector(`meta[name="csrf-token"]`)
+      .getAttribute("content");
     function joinSession(id) {
       fetch(`/sessions/${id}`, {
         method: "put",
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "_csrf": token,
+        })
       })
         .then((res) => {
           if (res.ok) {
@@ -20,14 +27,40 @@
         })
         .catch((err) => console.log(err));
     }
+    function leaveSession(id) {
+      fetch(`/sessions/${id}`, {
+        method: "delete",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "_csrf": token,
+        })
+      })
+        .then((res) => {
+          if (res.ok) {
+            window.location.reload();
+          }
+        })
+        .catch((err) => console.log(err));
+    }
+    function removeUserFromSession(name) {
+      console.log("name :", name);
+
+    }
+
   </script>
 </head>
 
 <body>
   <div class="grid grid-cols-6">
     <div class="col-start-3 col-span-2">
-      <div>
-        <%- include('header.ejs') %>
+      <div class="text-lg pt-2">
+        <a class="underline" href="/">Home</a>
+        <span> > </span>
+        <a class="underline" href="/sport/<%= sport.id %>">
+          <%=sport.name%>
+        </a>
+        <span> > </span>
+        <a>Sessions #<%= session.id %></a>
       </div>
       <h1 class="py-2 text-4xl text-gray-700">
         <%=sport.name%> session <span class="text-3xl">#<%= session.id%></span>
@@ -37,22 +70,47 @@
       <div>
         <p class="py-2 text-2xl">Players</p>
         <div class="grid grid-cols-3 ">
-          <% if (session.players_name.length==0 ) {%>
+          <% if (session.joinedPlayers.length==0 ) {%>
             <p>No one have joined.</p>
             <% } else { %>
-              <% (session.players_name).forEach(name=> { %>
-                <div class="border border-gray-400 rounded p-2 my-1 mr-2">
-                  <%= name %>
+              <% (session.joinedPlayers).forEach(name=> { %>
+                <div class="flex justify-between border border-gray-400 rounded p-2 my-1 mr-2">
+                  <div>
+                    <%= name %>
+                  </div>
+                  <% if (user.email==session.organiser) {%>
+                    <button id="<%= name %>" onclick="removeUserFromSession(this.id)">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                        stroke="currentColor" class="w-6 h-6">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                    <% } %>
                 </div>
                 <% }) %>
                   <% } %>
         </div>
         <div>
-          <% var r=(session.players_name).find((name)=> name==user.firstName) %>
-            <% if (!r) { %>
-              <button onclick="joinSession(<%=session.id%>)" class="block underline py-2 text-blue-800">Join the
-                session</button>
-              <% } %>
+          <% if (session.date>new Date().toISOString()) {%>
+            <% var r=(session.joinedPlayers).find((name)=> name==user.firstName) %>
+              <% if (!r && session.reqPlayers>0) { %>
+                <button onclick="joinSession(<%=session.id%>)" class="block underline py-2 text-blue-800">Join the
+                  session</button>
+                <% } else if (r) { %>
+                  <button onclick="leaveSession(<%=session.id%>)" class="block underline py-2 text-blue-800">Leave the
+                    session</button>
+                  <% } %>
+                    <% } %>
+        </div>
+        <div class="py-2">
+          <% if (user.email==session.organiser) {%>
+            <div>
+              <a href="" class="underline py-2 text-blue-800">Edit Session</a>
+            </div>
+            <div>
+              <a href="" class="underline py-2 text-blue-800">Cancel Session</a>
+            </div>
+            <% } %>
         </div>
       </div>
     </div>

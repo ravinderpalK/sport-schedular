@@ -8,6 +8,9 @@ const passport = require("passport");
 const connectEnsureLogin = require("connect-ensure-login");
 const session = require("express-session");
 const LocalStratergy = require("passport-local");
+const csrf = require("tiny-csrf");
+const cookieParser = require("cookie-parser");
+const flash = require("connect-flash");
 
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
@@ -15,7 +18,12 @@ const saltRounds = 10;
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
+app.use(cookieParser("shh! some secret string"));
+app.use(csrf("123456789iamasecret987654321look", ["POST", "PUT", "DELETE"]));
+app.use(flash());
+
 app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 
 app.use(
   session({
@@ -27,6 +35,11 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
+
+app.use(function (request, response, next) {
+  response.locals.messages = request.flash();
+  next();
+});
 
 passport.use(
   new LocalStratergy(
@@ -76,7 +89,12 @@ function requireAdmin(req, res, next) {
 }
 
 app.get("/", async (request, response) => {
-  return response.render("index");
+  if (request.isAuthenticated()) {
+    return response.redirect("/sports");
+  }
+  response.render("index", {
+    csrfToken: request.csrfToken(),
+  });
 });
 
 app.get(
@@ -88,6 +106,7 @@ app.get(
       return response.render("sports", {
         sports: sports,
         user: request.user,
+        csrfToken: request.csrfToken(),
       });
     } catch (err) {
       console.error(err);
@@ -96,17 +115,25 @@ app.get(
 );
 
 app.get("/signup", (request, response) => {
-  response.render("signup");
+  response.render("signup", { csrfToken: request.csrfToken() });
 });
 
 app.get("/login", (request, response) => {
-  response.render("login");
+  response.render("login", { csrfToken: request.csrfToken() });
+});
+
+app.get("/signout", (request, response, next) => {
+  request.logout((err) => {
+    if (err) return next(err);
+    response.redirect("/");
+  });
 });
 
 app.post(
   "/session",
   passport.authenticate("local", {
     failureRedirect: "/login",
+    failureFlash: true,
   }),
   async (request, response) => {
     response.redirect("/sports");
@@ -117,8 +144,10 @@ app.post("/users", async (request, response) => {
   const firstName = request.body.firstName;
   const lastName = request.body.lastName;
   const email = request.body.email;
-  // const password = request.body.password;
-  const hashedPwd = await bcrypt.hash(request.body.password, saltRounds);
+  const password = request.body.password;
+  const hashedPwd = password
+    ? await bcrypt.hash(request.body.password, saltRounds)
+    : "";
   try {
     const user = await Users.addUser(firstName, lastName, email, hashedPwd);
     request.login(user, (err) => {
@@ -128,7 +157,15 @@ app.post("/users", async (request, response) => {
       response.redirect("/sports");
     });
   } catch (err) {
-    console.log(err);
+    if (err.name == "SequelizeValidationError") {
+      if (!firstName) request.flash("firstName", "User Name cannot be empty");
+      if (!email) request.flash("email", "Email cannot be empty");
+      if (!password) request.flash("password", "Password cannot be empty");
+      response.redirect("/signup");
+    } else if (err.name == "SequelizeUniqueConstraintError") {
+      request.flash("email", "email is already used");
+      response.redirect("/signup");
+    } else console.log(err.name);
   }
 });
 
@@ -137,18 +174,24 @@ app.get(
   connectEnsureLogin.ensureLoggedIn(),
   requireAdmin,
   (request, response) => {
-    return response.render("new_sport");
+    return response.render("new_sport", { csrfToken: request.csrfToken() });
   }
 );
 
-app.post("/sports", async (request, response) => {
-  console.log(request.body.sportName);
+app.post("/sport/new", async (request, response) => {
+  const sportName = request.body.sportName;
   try {
-    await Sports.addSport(request.body.sportName);
+    const sport = await Sports.addSport(sportName);
+    response.redirect(`/sport/${sport.id}`);
   } catch (err) {
-    console.error(err);
+    if (err.name == "SequelizeValidationError") {
+      if (!sportName) request.flash("error", "Sport name cannot be empty");
+      response.redirect("/sports/new");
+    } else if (err.name == "SequelizeUniqueConstraintError") {
+      request.flash("error", "Sport is already added");
+      response.redirect("/sports/new");
+    }
   }
-  response.redirect("/sports/new");
 });
 
 app.get(
@@ -157,8 +200,19 @@ app.get(
   async (request, response) => {
     try {
       const sport = await Sports.getSport(request.params.id);
-      const sessions = await Sessions.getSportSessions(request.params.id);
-      response.render("sport", { sport, sessions });
+      const upcomingSessions = await Sessions.getUpcomingSportSessions(
+        request.params.id
+      );
+      const previousSessions = await Sessions.getPreviousSportSessions(
+        request.params.id
+      );
+      response.render("sport", {
+        sport,
+        upcomingSessions,
+        previousSessions,
+        user: request.user,
+        csrfToken: request.csrfToken(),
+      });
     } catch (err) {
       console.error(err);
     }
@@ -171,7 +225,12 @@ app.get(
   async (request, response) => {
     try {
       const sport = await Sports.getSport(request.params.id);
-      response.render("new_session", { sport });
+      const users = await Users.findAll();
+      response.render("new_session", {
+        sport,
+        users,
+        csrfToken: request.csrfToken(),
+      });
     } catch (err) {
       console.error(err);
     }
@@ -184,24 +243,35 @@ app.post(
   async (request, response) => {
     const date = request.body.date;
     const address = request.body.address;
-    const players_name = request.body.playersName
+    let joinedPlayers = request.body.playersName
       ? request.body.playersName.split(",")
       : [];
-    const req_players = request.body.nPlayers;
+    const reqPlayers = request.body.nPlayers;
     const organiser = request.user.email;
     const sportId = request.params.id;
     try {
       const session = await Sessions.addSession(
         date,
         address,
-        players_name,
-        req_players,
+        joinedPlayers,
+        reqPlayers,
         organiser,
         sportId
       );
       response.redirect(`/sessions/${session.id}`);
     } catch (err) {
-      console.error(err);
+      if (err.name == "SequelizeValidationError") {
+        if (!date) request.flash("date", "Add Date and Time of the session");
+        if (!address) request.flash("address", "Add location of the session");
+        if (!reqPlayers)
+          request.flash(
+            "req_players",
+            "Add No. of required players for the session"
+          );
+        response.redirect(`/sport/${request.params.id}/new_session`);
+      } else {
+        console.log(err.name);
+      }
     }
   }
 );
@@ -213,7 +283,12 @@ app.get(
     try {
       const session = await Sessions.getSession(request.params.id);
       const sport = await Sports.getSport(session.sportId);
-      response.render("sessions", { sport, session, user: request.user });
+      response.render("sessions", {
+        sport,
+        session,
+        user: request.user,
+        csrfToken: request.csrfToken(),
+      });
     } catch (err) {
       console.error(err);
     }
@@ -225,13 +300,37 @@ app.put(
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
-      console.log(request.params.id);
       const session = await Sessions.getSession(request.params.id);
-      let players_name = session.players_name;
-      players_name.push(request.user.firstName);
-      const updatedSession = await Sessions.joinSession(
+      if (session.req_players < 1) return;
+      let joinedPlayers = session.joinedPlayers;
+      joinedPlayers.push(request.user.firstName);
+      const updatedSession = await Sessions.updateSession(
         request.params.id,
-        players_name
+        joinedPlayers,
+        parseInt(session.reqPlayers) - 1
+      );
+      return response.json(updatedSession);
+    } catch (error) {
+      console.log(error);
+      return response.status(422).json(error);
+    }
+  }
+);
+app.delete(
+  "/sessions/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    try {
+      const session = await Sessions.getSession(request.params.id);
+      let joinedPlayers = session.joinedPlayers;
+      console.log(joinedPlayers);
+      let index = joinedPlayers.indexOf(request.user.firstName);
+      joinedPlayers.splice(index, 1);
+      console.log(joinedPlayers);
+      const updatedSession = await Sessions.updateSession(
+        request.params.id,
+        joinedPlayers,
+        parseInt(session.reqPlayers) + 1
       );
       return response.json(updatedSession);
     } catch (error) {
