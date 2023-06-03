@@ -1,5 +1,5 @@
 "use strict";
-const { Model } = require("sequelize");
+const { Model, where } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class Sessions extends Model {
     static associate(models) {
@@ -67,6 +67,14 @@ module.exports = (sequelize, DataTypes) => {
           },
         }
       );
+    }
+
+    static cancelSession(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
     }
   }
   Sessions.init(

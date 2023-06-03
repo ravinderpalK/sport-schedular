@@ -27,8 +27,8 @@
         })
         .catch((err) => console.log(err));
     }
-    function leaveSession(id) {
-      fetch(`/sessions/${id}`, {
+    function leaveSession(id, user) {
+      fetch(`/sessions/${id}&${user}`, {
         method: "delete",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -42,9 +42,20 @@
         })
         .catch((err) => console.log(err));
     }
-    function removeUserFromSession(name) {
-      console.log("name :", name);
-
+    function cancelSession(id) {
+      fetch(`/cancel_session/${id}%>`, {
+        method: "delete",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "_csrf": token,
+        })
+      })
+        .then((res) => {
+          if (res.ok) {
+            window.location = "/sport/<%= sport.id %>";
+          }
+        })
+        .catch((err) => console.log(err));
     }
 
   </script>
@@ -79,7 +90,7 @@
                     <%= name %>
                   </div>
                   <% if (user.email==session.organiser) {%>
-                    <button id="<%= name %>" onclick="removeUserFromSession(this.id)">
+                    <button id="<%= name %>" onclick="leaveSession(<%= session.id %>, this.id)">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-6 h-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -97,7 +108,8 @@
                 <button onclick="joinSession(<%=session.id%>)" class="block underline py-2 text-blue-800">Join the
                   session</button>
                 <% } else if (r) { %>
-                  <button onclick="leaveSession(<%=session.id%>)" class="block underline py-2 text-blue-800">Leave the
+                  <button onclick="leaveSession(<%=session.id%>, <%=user.firstName%>)"
+                    class="block underline py-2 text-blue-800">Leave the
                     session</button>
                   <% } %>
                     <% } %>
@@ -108,7 +120,8 @@
               <a href="" class="underline py-2 text-blue-800">Edit Session</a>
             </div>
             <div>
-              <a href="" class="underline py-2 text-blue-800">Cancel Session</a>
+              <button onclick="cancelSession(<%=session.id%>)" class="underline py-2 text-blue-800">Cancel
+                Session</button>
             </div>
             <% } %>
         </div>

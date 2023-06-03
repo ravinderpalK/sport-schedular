@@ -317,14 +317,14 @@ app.put(
   }
 );
 app.delete(
-  "/sessions/:id",
+  "/sessions/:id&:user",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
       const session = await Sessions.getSession(request.params.id);
       let joinedPlayers = session.joinedPlayers;
       console.log(joinedPlayers);
-      let index = joinedPlayers.indexOf(request.user.firstName);
+      let index = joinedPlayers.indexOf(request.params.user);
       joinedPlayers.splice(index, 1);
       console.log(joinedPlayers);
       const updatedSession = await Sessions.updateSession(
@@ -339,5 +339,16 @@ app.delete(
     }
   }
 );
+app.delete("/cancel_session/:id", async (request, response) => {
+  const id = request.params.id;
+  console.log(id);
+  try {
+    const res = await Sessions.cancelSession(id);
+    console.log(res);
+    return response.json(res);
+  } catch (err) {
+    return response.status(422).json(err);
+  }
+});
 
 module.exports = app;
