@@ -26,7 +26,7 @@
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         <div class="py-2">
           <label for="date" class="block">When will this sport session be held?</label>
-          <input type="datetime-local" name="date" id="date" min="<%= new Date().toISOString().slice(0,22) %>"
+          <input type="datetime-local" name="date" id="date" min="<%=  %>"
             class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
           <span class="block text-sm text-red-700">
             <% if(messages.date ) {%>
@@ -45,10 +45,15 @@
           </span>
         </div>
         <div class="py-2">
-          <label for="playersName" class="block">Who all will be joining you in this session?(comma
+          <label for="playersName" class="block">Who all will be joining you in this session?(Email id comma
             seprated)</label>
           <input onkeyup="searchPlayers(this)" type="text" name="playersName" id="playersName"
             class="border border-gray-300 text-gray-900 rounded p-2 w-full text-sm">
+          <span class="block text-sm text-red-700">
+            <% if(messages.email ) {%>
+              <%= messages.email %>
+                <% } %>
+          </span>
         </div>
         <div class="py-2">
           <label for="nPlayers" class="block">How many more plyers do you need?</label>

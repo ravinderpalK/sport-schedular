@@ -103,8 +103,22 @@ app.get(
   async (request, response) => {
     try {
       const sports = await Sports.getAllSports();
+      const joinedSessions = await Sessions.getJoinedSessions(
+        request.user.email
+      );
+      let joinedSessionsSport;
+      const getWithPromiseAll = async () => {
+        joinedSessionsSport = await Promise.all(
+          joinedSessions.map(async (session) => {
+            return await Sports.findOne({ where: { id: session.sportId } });
+          })
+        );
+      };
+      await getWithPromiseAll();
       return response.render("sports", {
-        sports: sports,
+        sports,
+        joinedSessions,
+        joinedSessionsSport,
         user: request.user,
         csrfToken: request.csrfToken(),
       });
@@ -249,6 +263,7 @@ app.post(
     const reqPlayers = request.body.nPlayers;
     const organiser = request.user.email;
     const sportId = request.params.id;
+
     try {
       const session = await Sessions.addSession(
         date,
@@ -268,6 +283,9 @@ app.post(
             "req_players",
             "Add No. of required players for the session"
           );
+        if (err.message == "Validation error: Email not valid") {
+          request.flash("email", "Email is not valid");
+        }
         response.redirect(`/sport/${request.params.id}/new_session`);
       } else {
         console.log(err.name);
@@ -303,7 +321,7 @@ app.put(
       const session = await Sessions.getSession(request.params.id);
       if (session.req_players < 1) return;
       let joinedPlayers = session.joinedPlayers;
-      joinedPlayers.push(request.user.firstName);
+      joinedPlayers.push(request.user.email);
       const updatedSession = await Sessions.updateSession(
         request.params.id,
         joinedPlayers,
@@ -320,6 +338,7 @@ app.delete(
   "/sessions/:id&:user",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
+    console.log(request.params.user);
     try {
       const session = await Sessions.getSession(request.params.id);
       let joinedPlayers = session.joinedPlayers;

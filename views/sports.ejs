@@ -20,6 +20,21 @@
           <%- include('admin.ejs') %>
             <% } %>
       </div>
+      <div>
+        <p class="py-2 text-xl">You have the following upcoming Sessions: </p>
+        <% for (var i=0; i<joinedSessions.length; i++) {%>
+          <div class="flex justify-between border border-gray-400 rounded p-2 my-2 mr-4">
+            <a class="" href="/sessions/<%= joinedSessions[i].id %>">
+              <%= joinedSessionsSport[i].name %>
+                <span> - </span>
+                <%= new Date(joinedSessions[i].date).toString().slice(4,21) %>
+            </a>
+            <div>
+              <%= joinedSessions[i].reqPlayers %> slots
+            </div>
+          </div>
+          <% } %>
+      </div>
       <% if (sports.length==0) {%>
         <p class="py-2 text-xl">No sports are available.</p>
         <% } else {%>

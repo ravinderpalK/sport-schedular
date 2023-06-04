@@ -50,6 +50,17 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
+    static getJoinedSessions(user) {
+      const { Op } = require("sequelize");
+      return this.findAll({
+        where: {
+          joinedPlayers: {
+            [Op.contains]: [user],
+          },
+        },
+      });
+    }
+
     static getSession(id) {
       return this.findOne({
         where: {
@@ -95,6 +106,18 @@ module.exports = (sequelize, DataTypes) => {
       },
       joinedPlayers: {
         type: DataTypes.ARRAY(DataTypes.STRING),
+        validate: {
+          isValidateEmail: function (value) {
+            let emails = Array.isArray(value) ? value : [value];
+            let regex = new RegExp("[a-z0-9]+@[a-z]+.[a-z]{2,3}");
+            emails.forEach((email) => {
+              if (!regex.test(email)) {
+                throw new Error("Email not valid");
+              }
+            });
+            return value;
+          },
+        },
       },
       reqPlayers: {
         type: DataTypes.INTEGER,

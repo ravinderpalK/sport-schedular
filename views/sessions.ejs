@@ -28,6 +28,7 @@
         .catch((err) => console.log(err));
     }
     function leaveSession(id, user) {
+      console.log(user);
       fetch(`/sessions/${id}&${user}`, {
         method: "delete",
         headers: { "Content-Type": "application/json" },
@@ -103,12 +104,12 @@
         </div>
         <div>
           <% if (session.date>new Date().toISOString()) {%>
-            <% var r=(session.joinedPlayers).find((name)=> name==user.firstName) %>
-              <% if (!r && session.reqPlayers>0) { %>
+            <% var email=(session.joinedPlayers).find((email)=> email==user.email) %>
+              <% if (!email && session.reqPlayers>0) { %>
                 <button onclick="joinSession(<%=session.id%>)" class="block underline py-2 text-blue-800">Join the
                   session</button>
-                <% } else if (r) { %>
-                  <button onclick="leaveSession(<%=session.id%>, <%=user.firstName%>)"
+                <% } else if (email) { %>
+                  <button onclick="leaveSession('<%=session.id%>','<%=user.email%>')"
                     class="block underline py-2 text-blue-800">Leave the
                     session</button>
                   <% } %>
