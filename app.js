@@ -390,4 +390,28 @@ app.get(
   }
 );
 
+app.get(
+  "/reports/:months",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const months = request.params.months;
+    try {
+      const sports = await Sports.getAllSports();
+      const sportsName = sports.map((sport) => sport.name);
+      let sportsSessionCount;
+      const getWithPromiseAll = async () => {
+        sportsSessionCount = await Promise.all(
+          sports.map(async (sport) => {
+            return (await Sessions.getAllSession(sport.id, months)).length;
+          })
+        );
+      };
+      await getWithPromiseAll();
+      response.render("reports", { sportsName, sportsSessionCount, months });
+    } catch (err) {
+      console.log(err);
+    }
+  }
+);
+
 module.exports = app;

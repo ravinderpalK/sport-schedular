@@ -62,6 +62,20 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
+    static getAllSession(sportId, months) {
+      const { Op } = require("sequelize");
+      return this.findAll({
+        where: {
+          sportId,
+          date: {
+            [Op.gt]: new Date(
+              new Date().setMonth(new Date().getMonth() - months)
+            ).toISOString(),
+          },
+        },
+      });
+    }
+
     static getSession(id) {
       return this.findOne({
         where: {
