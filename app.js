@@ -239,10 +239,8 @@ app.get(
   async (request, response) => {
     try {
       const sport = await Sports.getSport(request.params.id);
-      const users = await Users.findAll();
       response.render("new_session", {
         sport,
-        users,
         csrfToken: request.csrfToken(),
       });
     } catch (err) {
@@ -358,16 +356,38 @@ app.delete(
     }
   }
 );
-app.delete("/cancel_session/:id", async (request, response) => {
+app.post("/cancel_session/:id", async (request, response) => {
   const id = request.params.id;
-  console.log(id);
+  const cancelReason = request.body.cancelReason;
+  if (cancelReason.length == 0) {
+    request.flash("cancelReason", "Cannot be empty");
+    return response.redirect(`/sessions/${id}`);
+  }
+  console.log(cancelReason);
   try {
-    const res = await Sessions.cancelSession(id);
-    console.log(res);
-    return response.json(res);
+    await Sessions.cancelSession(id, cancelReason);
+    const session = await Sessions.getSession(id);
+    return response.redirect(`/sport/${session.sportId}`);
   } catch (err) {
     return response.status(422).json(err);
   }
 });
+
+app.get(
+  "/sport/:sportId/edit_session/:sessionID",
+  async (request, response) => {
+    try {
+      const sport = await Sports.getSport(request.params.sportId);
+      const session = await Sessions.getSession(request.params.sessionID);
+      response.render("edit_session", {
+        sport,
+        session,
+        csrfToken: request.csrfToken(),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+);
 
 module.exports = app;

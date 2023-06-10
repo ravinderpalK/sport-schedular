@@ -30,9 +30,13 @@
                   <span> - </span>
                   <%= new Date(joinedSessions[i].date).toString().slice(4,21) %>
               </a>
-              <div>
-                <%= joinedSessions[i].reqPlayers %> slots
-              </div>
+              <% if (!joinedSessions[i].isCanceledReason) {%>
+                <div>
+                  <%= joinedSessions[i].reqPlayers %> slots
+                </div>
+                <% } else { %>
+                  <div class="text-red-700">Canceled</div>
+                  <% } %>
             </div>
             <% } %>
         </div>
@@ -44,7 +48,7 @@
               <ul>
                 <% for (var i=0; i<sports.length; i++) {%>
                   <li>
-                    <a href="sport/<%= sports[i].id %>" class="underline py-3 text-blue-800">
+                    <a href="sport/<%= sports[i].id %>" class="underline py-4 text-base text-blue-800">
                       <%= sports[i].name %>
                     </a>
                   </li>

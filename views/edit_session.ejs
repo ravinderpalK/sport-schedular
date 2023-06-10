@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/css/tailwind.css">
+  <title>Document</title>
+</head>
+
+<body>
+  <div class="grid grid-cols-6">
+    <div class="col-start-3 col-span-2">
+      <div class="text-lg pt-2">
+        <a class="underline" href="/">Home</a>
+        <span> > </span>
+        <a class="underline" href="/sport/<%= sport.id %>">
+          <%=sport.name%>
+        </a>
+        <span> > </span>
+        <a>Edit Session</a>
+      </div>
+      <h1 class="py-2 text-3xl">New <%= sport.name %> Session</h1>
+      <form action="/new_session/<%= sport.id %>" method="post">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="py-2">
+          <label for="date" class="block">When will this sport session be held?</label>
+          <input value="<%= session.date %>" type="datetime-local" name="date" id="date" min="<%=  %>"
+            class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
+          <span class="block text-sm text-red-700">
+            <% if(messages.date ) {%>
+              <%= messages.date %>
+                <% } %>
+          </span>
+        </div>
+        <div class="py-2">
+          <label for="address" class="block">Where will this session be played?</label>
+          <input value="<%= session.address %>" type="text" name="address" id="address"
+            class="border border-gray-300 text-gray-900 rounded p-2 w-full text-sm">
+          <span class="block text-sm text-red-700">
+            <% if(messages.address ) {%>
+              <%= messages.address %>
+                <% } %>
+          </span>
+        </div>
+        <div class="py-2">
+          <label for="playersName" class="block">Who all will be joining you in this session?(Email id comma
+            seprated)</label>
+          <input value="<%= session.joinedPlayers %>" onkeyup="searchPlayers(this)" type="text" name="playersName"
+            id="playersName" class="border border-gray-300 text-gray-900 rounded p-2 w-full text-sm">
+          <span class="block text-sm text-red-700">
+            <% if(messages.email ) {%>
+              <%= messages.email %>
+                <% } %>
+          </span>
+        </div>
+        <div class="py-2">
+          <label for="nPlayers" class="block">How many more plyers do you need?</label>
+          <input value="<%= session.reqPlayers %>" type="text" name="nPlayers" id="nPlayers"
+            class="border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
+          <span class="block text-sm text-red-700">
+            <% if(messages.req_players ) {%>
+              <%= messages.req_players %>
+                <% } %>
+          </span>
+        </div>
+        <div class="py-2">
+          <button type="submit"
+            class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+
+</html>

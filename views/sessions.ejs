@@ -44,8 +44,9 @@
         .catch((err) => console.log(err));
     }
     function cancelSession(id) {
+      document.getElementById("cancelSession").style.display = "block";
       fetch(`/cancel_session/${id}%>`, {
-        method: "delete",
+        method: "put",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           "_csrf": token,
@@ -116,15 +117,40 @@
                     <% } %>
         </div>
         <div class="py-2">
-          <% if (user.email==session.organiser) {%>
+          <% if (user.email==session.organiser && (!session.isCanceledReason)) {%>
             <div>
-              <a href="" class="underline py-2 text-blue-800">Edit Session</a>
+              <a href="/sport/<%= sport.id %>/edit_session/<%= session.id %>" class="underline py-2 text-blue-800">Edit
+                Session</a>
             </div>
             <div>
-              <button onclick="cancelSession(<%=session.id%>)" class="underline py-2 text-blue-800">Cancel
+              <button class="underline py-2 text-blue-800">Cancel
                 Session</button>
             </div>
-            <% } %>
+            <% } else if ((session.isCanceledReason)) { %>
+              <div class="text-red-700">
+                <span>Canceled Reason : </span>
+                <%= session.isCanceledReason %>
+              </div>
+              <% } %>
+        </div>
+        <div class="hidden z-10" id="cancelSession">
+          <!-- <form action="/cancel_Session/<%= session.id %>" method="post"> -->
+          <!-- <input type="hidden" name="_csrf" value="<%= csrfToken %>"> -->
+          <div class="py-2">
+            <label for="cancelReason">What is the reason to cancel a session</label>
+            <input type="text" name="cancelReason" id="cancelReason"
+              class="block border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
+          </div>
+          <div class="py-2">
+            <button onclick="cancelSession('<%= session.id %>')"
+              class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Submit</button>
+            <span class="text-sm text-red-700">
+              <% if(messages.cancelReason ) {%>
+                <%= messages.cancelReason %>
+                  <% } %>
+            </span>
+          </div>
+          <!-- </form> -->
         </div>
       </div>
     </div>

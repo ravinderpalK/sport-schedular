@@ -34,6 +34,7 @@ module.exports = (sequelize, DataTypes) => {
           date: {
             [Op.gt]: new Date().toISOString(),
           },
+          isCanceledReason: "",
         },
       });
     }
@@ -80,12 +81,16 @@ module.exports = (sequelize, DataTypes) => {
       );
     }
 
-    static cancelSession(id) {
-      return this.destroy({
-        where: {
-          id,
-        },
-      });
+    static cancelSession(id, reason) {
+      console.log("****", reason, id);
+      return this.update(
+        { isCanceledReason: reason },
+        {
+          where: {
+            id,
+          },
+        }
+      );
     }
   }
   Sessions.init(
@@ -132,6 +137,9 @@ module.exports = (sequelize, DataTypes) => {
           notEmpty: true,
           isEmail: true,
         },
+      },
+      isCanceledReason: {
+        type: DataTypes.STRING,
       },
       sportId: {
         type: DataTypes.INTEGER,
