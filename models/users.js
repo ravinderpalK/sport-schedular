@@ -14,6 +14,13 @@ module.exports = (sequelize, DataTypes) => {
         role: "user",
       });
     }
+    static getUser(email) {
+      return this.findOne({
+        where: {
+          email,
+        },
+      });
+    }
   }
   Users.init(
     {

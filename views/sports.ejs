@@ -20,19 +20,19 @@
           <%- include('admin.ejs') %>
             <% } %>
       </div>
-      <% if (joinedSessions.length> 0) {%>
+      <% if (upcomingJoinedSessions.length> 0) {%>
         <div>
           <p class="py-2 text-xl">You have the following upcoming Sessions: </p>
-          <% for (var i=0; i<joinedSessions.length; i++) {%>
+          <% for (var i=0; i<upcomingJoinedSessions.length; i++) {%>
             <div class="flex justify-between border border-gray-400 rounded p-2 my-2 mr-4">
-              <a class="" href="/sessions/<%= joinedSessions[i].id %>">
+              <a class="" href="/sessions/<%= upcomingJoinedSessions[i].id %>">
                 <%= joinedSessionsSport[i].name %>
                   <span> - </span>
-                  <%= new Date(joinedSessions[i].date).toString().slice(4,21) %>
+                  <%= new Date(upcomingJoinedSessions[i].date).toString().slice(4,21) %>
               </a>
-              <% if (!joinedSessions[i].isCanceledReason) {%>
+              <% if (!upcomingJoinedSessions[i].isCanceledReason) {%>
                 <div>
-                  <%= joinedSessions[i].reqPlayers %> slots
+                  <%= upcomingJoinedSessions[i].reqPlayers %> slots
                 </div>
                 <% } else { %>
                   <div class="text-red-700">Canceled</div>

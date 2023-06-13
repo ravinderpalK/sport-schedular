@@ -43,21 +43,8 @@
         })
         .catch((err) => console.log(err));
     }
-    function cancelSession(id) {
+    function cancelSession() {
       document.getElementById("cancelSession").style.display = "block";
-      fetch(`/cancel_session/${id}%>`, {
-        method: "put",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          "_csrf": token,
-        })
-      })
-        .then((res) => {
-          if (res.ok) {
-            window.location = "/sport/<%= sport.id %>";
-          }
-        })
-        .catch((err) => console.log(err));
     }
 
   </script>
@@ -83,16 +70,16 @@
       <div>
         <p class="py-2 text-2xl">Players</p>
         <div class="grid grid-cols-3 ">
-          <% if (session.joinedPlayers.length==0 ) {%>
+          <% if (joinedPlayersName==0 ) {%>
             <p>No one have joined.</p>
             <% } else { %>
-              <% (session.joinedPlayers).forEach(name=> { %>
+              <% (joinedPlayersName).forEach((name, index)=> { %>
                 <div class="flex justify-between border border-gray-400 rounded p-2 my-1 mr-2">
                   <div>
                     <%= name %>
                   </div>
                   <% if (user.email==session.organiser) {%>
-                    <button id="<%= name %>" onclick="leaveSession(<%= session.id %>, this.id)">
+                    <button id="<%= session.joinedPlayers[index] %>" onclick="leaveSession(<%= session.id %>, this.id)">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                         stroke="currentColor" class="w-6 h-6">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -123,7 +110,7 @@
                 Session</a>
             </div>
             <div>
-              <button class="underline py-2 text-blue-800">Cancel
+              <button onclick="cancelSession()" class="underline py-2 text-blue-800">Cancel
                 Session</button>
             </div>
             <% } else if ((session.isCanceledReason)) { %>
@@ -134,23 +121,23 @@
               <% } %>
         </div>
         <div class="hidden z-10" id="cancelSession">
-          <!-- <form action="/cancel_Session/<%= session.id %>" method="post"> -->
-          <!-- <input type="hidden" name="_csrf" value="<%= csrfToken %>"> -->
-          <div class="py-2">
-            <label for="cancelReason">What is the reason to cancel a session</label>
-            <input type="text" name="cancelReason" id="cancelReason"
-              class="block border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
-          </div>
-          <div class="py-2">
-            <button onclick="cancelSession('<%= session.id %>')"
-              class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Submit</button>
-            <span class="text-sm text-red-700">
-              <% if(messages.cancelReason ) {%>
-                <%= messages.cancelReason %>
-                  <% } %>
-            </span>
-          </div>
-          <!-- </form> -->
+          <form action="/cancel_Session/<%= session.id %>" method="post">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="py-2">
+              <label for="cancelReason">What is the reason to cancel a session</label>
+              <input type="text" name="cancelReason" id="cancelReason"
+                class="block border border-gray-300 text-gray-900 rounded p-2 w-1/2 text-sm">
+            </div>
+            <div class="py-2">
+              <button onclick="cancelSession('<%= session.id %>')"
+                class="text-white bg-green-600 hover:bg-green-800 font-medium rounded px-5 py-2">Submit</button>
+              <span class="text-sm text-red-700">
+                <% if(messages.cancelReason ) {%>
+                  <%= messages.cancelReason %>
+                    <% } %>
+              </span>
+            </div>
+          </form>
         </div>
       </div>
     </div>

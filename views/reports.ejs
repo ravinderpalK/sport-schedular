@@ -31,9 +31,10 @@
         <p class="py-2 text-xl">Here's a quick look at recent activity.</p>
         <div class="py-2">
           <select onchange="onSelect()" id="select-month">
-            <option id="1" value="1">Last 1 month
-            <option id="2" value="3">Last 3 month
-            <option id="3" value="6">Last 6 month
+            <option id="1" value="1">next 1 month
+            <option id="-1" value="-1">Last 1 month
+            <option id="-3" value="-3">Last 3 month
+            <option id="-6" value="-6">Last 6 month
           </select>
         </div>
         <div>
@@ -50,11 +51,25 @@
       data: {
         labels: '<%= sportsName %>'.split(','),
         datasets: [{
-          label: 'No of sessions',
-          data: [<%= sportsSessionCount %>]
-        }]
+          label: 'sessions',
+          data: [<%= sessionCount %>],
+        },
+        {
+          label: 'canceled sessions',
+          data: [<%= canceledSessionCount %>]
+        }
+        ]
       },
-      options: {}
+      options: {
+        scales: {
+          x: {
+            stacked: true,
+          },
+          y: {
+            stacked: true,
+          }
+        },
+      }
     })
   </script>
 </body>

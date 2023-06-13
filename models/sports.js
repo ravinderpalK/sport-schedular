@@ -22,6 +22,23 @@ module.exports = (sequelize, DataTypes) => {
         },
       });
     }
+    static updateSportName(name, id) {
+      return this.update(
+        { name },
+        {
+          where: {
+            id,
+          },
+        }
+      );
+    }
+    static removeSport(id) {
+      return this.destroy({
+        where: {
+          id,
+        },
+      });
+    }
   }
   Sports.init(
     {

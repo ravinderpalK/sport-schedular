@@ -51,12 +51,15 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    static getJoinedSessions(user) {
+    static getUpcomingJoinedSessions(user) {
       const { Op } = require("sequelize");
       return this.findAll({
         where: {
           joinedPlayers: {
             [Op.contains]: [user],
+          },
+          date: {
+            [Op.gt]: new Date().toISOString(),
           },
         },
       });
@@ -64,13 +67,36 @@ module.exports = (sequelize, DataTypes) => {
 
     static getAllSession(sportId, months) {
       const { Op } = require("sequelize");
+      let date1 = new Date(
+        new Date().setMonth(new Date().getMonth() + parseInt(months))
+      ).toISOString();
+      let date2 = new Date().toISOString();
+      if (date1 > date2) [date1, date2] = [date2, date1];
       return this.findAll({
         where: {
           sportId,
           date: {
-            [Op.gt]: new Date(
-              new Date().setMonth(new Date().getMonth() - months)
-            ).toISOString(),
+            [Op.between]: [date1, date2],
+          },
+        },
+      });
+    }
+
+    static getAllCanceledSession(sportId, months) {
+      const { Op } = require("sequelize");
+      let date1 = new Date(
+        new Date().setMonth(new Date().getMonth() + parseInt(months))
+      ).toISOString();
+      let date2 = new Date().toISOString();
+      if (date1 > date2) [date1, date2] = [date2, date1];
+      return this.findAll({
+        where: {
+          sportId,
+          date: {
+            [Op.between]: [date1, date2],
+          },
+          isCanceledReason: {
+            [Op.not]: "",
           },
         },
       });
@@ -84,7 +110,7 @@ module.exports = (sequelize, DataTypes) => {
       });
     }
 
-    static updateSession(id, joinedPlayers, reqPlayers) {
+    static updateSessionPlayers(id, joinedPlayers, reqPlayers) {
       return this.update(
         { joinedPlayers, reqPlayers },
         {
@@ -96,9 +122,24 @@ module.exports = (sequelize, DataTypes) => {
     }
 
     static cancelSession(id, reason) {
-      console.log("****", reason, id);
       return this.update(
         { isCanceledReason: reason },
+        {
+          where: {
+            id,
+          },
+        }
+      );
+    }
+
+    static editSession(date, address, joinedPlayers, reqPlayers, id) {
+      return this.update(
+        {
+          date,
+          address,
+          joinedPlayers,
+          reqPlayers,
+        },
         {
           where: {
             id,

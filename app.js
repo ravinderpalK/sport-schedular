@@ -103,13 +103,13 @@ app.get(
   async (request, response) => {
     try {
       const sports = await Sports.getAllSports();
-      const joinedSessions = await Sessions.getJoinedSessions(
+      const upcomingJoinedSessions = await Sessions.getUpcomingJoinedSessions(
         request.user.email
       );
       let joinedSessionsSport;
       const getWithPromiseAll = async () => {
         joinedSessionsSport = await Promise.all(
-          joinedSessions.map(async (session) => {
+          upcomingJoinedSessions.map(async (session) => {
             return await Sports.findOne({ where: { id: session.sportId } });
           })
         );
@@ -117,7 +117,7 @@ app.get(
       await getWithPromiseAll();
       return response.render("sports", {
         sports,
-        joinedSessions,
+        upcomingJoinedSessions,
         joinedSessionsSport,
         user: request.user,
         csrfToken: request.csrfToken(),
@@ -136,12 +136,16 @@ app.get("/login", (request, response) => {
   response.render("login", { csrfToken: request.csrfToken() });
 });
 
-app.get("/signout", (request, response, next) => {
-  request.logout((err) => {
-    if (err) return next(err);
-    response.redirect("/");
-  });
-});
+app.get(
+  "/signout",
+  connectEnsureLogin.ensureLoggedIn(),
+  (request, response, next) => {
+    request.logout((err) => {
+      if (err) return next(err);
+      response.redirect("/");
+    });
+  }
+);
 
 app.post(
   "/session",
@@ -154,34 +158,38 @@ app.post(
   }
 );
 
-app.post("/users", async (request, response) => {
-  const firstName = request.body.firstName;
-  const lastName = request.body.lastName;
-  const email = request.body.email;
-  const password = request.body.password;
-  const hashedPwd = password
-    ? await bcrypt.hash(request.body.password, saltRounds)
-    : "";
-  try {
-    const user = await Users.addUser(firstName, lastName, email, hashedPwd);
-    request.login(user, (err) => {
-      if (err) {
-        console.log(err);
-      }
-      response.redirect("/sports");
-    });
-  } catch (err) {
-    if (err.name == "SequelizeValidationError") {
-      if (!firstName) request.flash("firstName", "User Name cannot be empty");
-      if (!email) request.flash("email", "Email cannot be empty");
-      if (!password) request.flash("password", "Password cannot be empty");
-      response.redirect("/signup");
-    } else if (err.name == "SequelizeUniqueConstraintError") {
-      request.flash("email", "email is already used");
-      response.redirect("/signup");
-    } else console.log(err.name);
+app.post(
+  "/users",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const firstName = request.body.firstName;
+    const lastName = request.body.lastName;
+    const email = request.body.email;
+    const password = request.body.password;
+    const hashedPwd = password
+      ? await bcrypt.hash(request.body.password, saltRounds)
+      : "";
+    try {
+      const user = await Users.addUser(firstName, lastName, email, hashedPwd);
+      request.login(user, (err) => {
+        if (err) {
+          console.log(err);
+        }
+        response.redirect("/sports");
+      });
+    } catch (err) {
+      if (err.name == "SequelizeValidationError") {
+        if (!firstName) request.flash("firstName", "User Name cannot be empty");
+        if (!email) request.flash("email", "Email cannot be empty");
+        if (!password) request.flash("password", "Password cannot be empty");
+        response.redirect("/signup");
+      } else if (err.name == "SequelizeUniqueConstraintError") {
+        request.flash("email", "email is already used");
+        response.redirect("/signup");
+      } else console.log(err.name);
+    }
   }
-});
+);
 
 app.get(
   "/sports/new",
@@ -192,21 +200,74 @@ app.get(
   }
 );
 
-app.post("/sport/new", async (request, response) => {
-  const sportName = request.body.sportName;
-  try {
-    const sport = await Sports.addSport(sportName);
-    response.redirect(`/sport/${sport.id}`);
-  } catch (err) {
-    if (err.name == "SequelizeValidationError") {
-      if (!sportName) request.flash("error", "Sport name cannot be empty");
-      response.redirect("/sports/new");
-    } else if (err.name == "SequelizeUniqueConstraintError") {
-      request.flash("error", "Sport is already added");
-      response.redirect("/sports/new");
+app.post(
+  "/sport/new",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const sportName = request.body.sportName;
+    try {
+      const sport = await Sports.addSport(sportName);
+      response.redirect(`/sport/${sport.id}`);
+    } catch (err) {
+      if (err.name == "SequelizeValidationError") {
+        if (!sportName) request.flash("error", "Sport name cannot be empty");
+        response.redirect("/sports/new");
+      } else if (err.name == "SequelizeUniqueConstraintError") {
+        request.flash("error", "Sport is already added");
+        response.redirect("/sports/new");
+      }
     }
   }
-});
+);
+
+app.get(
+  "/sport/:id/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const id = request.params.id;
+    try {
+      const sport = await Sports.getSport(id);
+      response.render("edit_sport", { sport, csrfToken: request.csrfToken() });
+    } catch (err) {
+      console.error(err);
+    }
+  }
+);
+
+app.post(
+  "/sport/:id/edit",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const sportName = request.body.sportName;
+    const id = request.params.id;
+    try {
+      await Sports.updateSportName(sportName, id);
+      response.redirect(`/sport/${id}`);
+    } catch (err) {
+      if (err.name == "SequelizeValidationError") {
+        if (!sportName) request.flash("error", "Sport name cannot be empty");
+        response.redirect("/sports/new");
+      } else if (err.name == "SequelizeUniqueConstraintError") {
+        request.flash("error", "Sport is already added");
+        response.redirect("/sports/new");
+      }
+    }
+  }
+);
+
+app.delete(
+  "/delete_sport/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const id = request.params.id;
+    try {
+      const sport = await Sports.removeSport(id);
+      return response.json(sport);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+);
 
 app.get(
   "/sport/:id",
@@ -299,9 +360,19 @@ app.get(
     try {
       const session = await Sessions.getSession(request.params.id);
       const sport = await Sports.getSport(session.sportId);
+      let joinedPlayersName;
+      const getWithPromiseAll = async () => {
+        joinedPlayersName = await Promise.all(
+          session.joinedPlayers.map(async (email) => {
+            return (await Users.getUser(email)).firstName;
+          })
+        );
+      };
+      await getWithPromiseAll();
       response.render("sessions", {
         sport,
         session,
+        joinedPlayersName,
         user: request.user,
         csrfToken: request.csrfToken(),
       });
@@ -320,7 +391,7 @@ app.put(
       if (session.req_players < 1) return;
       let joinedPlayers = session.joinedPlayers;
       joinedPlayers.push(request.user.email);
-      const updatedSession = await Sessions.updateSession(
+      const updatedSession = await Sessions.updateSessionPlayers(
         request.params.id,
         joinedPlayers,
         parseInt(session.reqPlayers) - 1
@@ -344,7 +415,7 @@ app.delete(
       let index = joinedPlayers.indexOf(request.params.user);
       joinedPlayers.splice(index, 1);
       console.log(joinedPlayers);
-      const updatedSession = await Sessions.updateSession(
+      const updatedSession = await Sessions.updateSessionPlayers(
         request.params.id,
         joinedPlayers,
         parseInt(session.reqPlayers) + 1
@@ -356,29 +427,34 @@ app.delete(
     }
   }
 );
-app.post("/cancel_session/:id", async (request, response) => {
-  const id = request.params.id;
-  const cancelReason = request.body.cancelReason;
-  if (cancelReason.length == 0) {
-    request.flash("cancelReason", "Cannot be empty");
-    return response.redirect(`/sessions/${id}`);
+app.post(
+  "/cancel_session/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const id = request.params.id;
+    const cancelReason = request.body.cancelReason;
+    if (cancelReason.length == 0) {
+      request.flash("cancelReason", "Cannot be empty");
+      return response.redirect(`/sessions/${id}`);
+    }
+    console.log(cancelReason);
+    try {
+      await Sessions.cancelSession(id, cancelReason);
+      const session = await Sessions.getSession(id);
+      return response.redirect(`/sport/${session.sportId}`);
+    } catch (err) {
+      return response.status(422).json(err);
+    }
   }
-  console.log(cancelReason);
-  try {
-    await Sessions.cancelSession(id, cancelReason);
-    const session = await Sessions.getSession(id);
-    return response.redirect(`/sport/${session.sportId}`);
-  } catch (err) {
-    return response.status(422).json(err);
-  }
-});
+);
 
 app.get(
-  "/sport/:sportId/edit_session/:sessionID",
+  "/sport/:sportId/edit_session/:sessionId",
+  connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     try {
       const sport = await Sports.getSport(request.params.sportId);
-      const session = await Sessions.getSession(request.params.sessionID);
+      const session = await Sessions.getSession(request.params.sessionId);
       response.render("edit_session", {
         sport,
         session,
@@ -390,24 +466,60 @@ app.get(
   }
 );
 
+app.post(
+  "/edit_session/:id",
+  connectEnsureLogin.ensureLoggedIn(),
+  async (request, response) => {
+    const date = request.body.date;
+    const address = request.body.address;
+    let joinedPlayers = request.body.playersName
+      ? request.body.playersName.split(",")
+      : [];
+    const reqPlayers = request.body.nPlayers;
+    const id = request.params.id;
+    try {
+      await Sessions.editSession(date, address, joinedPlayers, reqPlayers, id);
+      response.redirect(`/sessions/${id}`);
+    } catch (err) {
+      console.error(err);
+    }
+  }
+);
+
 app.get(
   "/reports/:months",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
     const months = request.params.months;
+    console.log(months);
     try {
       const sports = await Sports.getAllSports();
       const sportsName = sports.map((sport) => sport.name);
-      let sportsSessionCount;
+      let sessionCount;
       const getWithPromiseAll = async () => {
-        sportsSessionCount = await Promise.all(
+        sessionCount = await Promise.all(
           sports.map(async (sport) => {
             return (await Sessions.getAllSession(sport.id, months)).length;
           })
         );
       };
       await getWithPromiseAll();
-      response.render("reports", { sportsName, sportsSessionCount, months });
+      let canceledSessionCount;
+      const getCanceledSessionWithPromiseAll = async () => {
+        canceledSessionCount = await Promise.all(
+          sports.map(async (sport) => {
+            return (await Sessions.getAllCanceledSession(sport.id, months))
+              .length;
+          })
+        );
+      };
+      await getCanceledSessionWithPromiseAll();
+      response.render("reports", {
+        sportsName,
+        sessionCount,
+        canceledSessionCount,
+        months,
+      });
     } catch (err) {
       console.log(err);
     }

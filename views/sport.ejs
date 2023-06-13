@@ -5,9 +5,13 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="<%= csrfToken %>">
   <link rel="stylesheet" href="/css/tailwind.css">
   <title>Document</title>
   <script>
+    var token = document
+      .querySelector(`meta[name="csrf-token"]`)
+      .getAttribute("content");
     let toggle = true;
     function previousSession(element) {
       let div = document.getElementById("previousSession");
@@ -20,6 +24,23 @@
         element.innerHTML = "View Previous Sessions"
       }
       toggle = !toggle;
+    }
+    function deleteSport(id) {
+      const confirm = window.confirm("Do you want to delete the sport?");
+      if (!confirm) return;
+      fetch(`/delete_sport/${id}`, {
+        method: "delete",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          "_csrf": token,
+        })
+      })
+        .then((res) => {
+          if (res.ok) {
+            window.location = "/";
+          }
+        })
+        .catch((err) => console.log(err));
     }
   </script>
 </head>
@@ -42,8 +63,8 @@
         </div>
         <% if (user.role=="admin" ) {%>
           <div class="inline-block">
-            <a href="" class="px-1 underline">edit</a>
-            <a href="" class="px-1 underline">delete</a>
+            <a href="/sport/<%= sport.id %>/edit" class="px-1 underline">edit</a>
+            <button onclick="deleteSport('<%= sport.id %>')" class="px-1 underline">delete</button>
           </div>
           <% } %>
       </div>
