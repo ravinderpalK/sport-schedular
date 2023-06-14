@@ -338,6 +338,16 @@ app.post(
     const sportId = request.params.id;
 
     try {
+      const getWithPromiseAll = async () => {
+        joinedPlayers = await Promise.all(
+          joinedPlayers.map(async (email) => {
+            const user = await Users.getUser(email);
+            return user ? user.email : null;
+          })
+        );
+      };
+      await getWithPromiseAll();
+
       const session = await Sessions.addSession(
         date,
         address,
@@ -357,7 +367,7 @@ app.post(
             "Add No. of required players for the session"
           );
         if (err.message == "Validation error: Email not valid") {
-          request.flash("email", "Email is not valid");
+          request.flash("email", "All Emails are not valid");
         }
         response.redirect(`/sport/${request.params.id}/new_session`);
       } else {
