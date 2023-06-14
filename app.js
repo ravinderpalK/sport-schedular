@@ -266,6 +266,7 @@ app.delete(
   async (request, response) => {
     const id = request.params.id;
     try {
+      await Sessions.deleteSessions(id);
       const sport = await Sports.removeSport(id);
       return response.json(sport);
     } catch (err) {

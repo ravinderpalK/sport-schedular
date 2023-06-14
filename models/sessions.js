@@ -147,6 +147,13 @@ module.exports = (sequelize, DataTypes) => {
         }
       );
     }
+    static deleteSessions(sportId) {
+      return this.destroy({
+        where: {
+          sportId,
+        },
+      });
+    }
   }
   Sessions.init(
     {
