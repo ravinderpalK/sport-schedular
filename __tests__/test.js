@@ -176,4 +176,45 @@ describe("Sport Schedular Application", () => {
       });
     expect(updatSessionResponse.statusCode).toBe(200);
   });
+
+  test("edit a sport session", async () => {
+    const agent = request.agent(server);
+    const userEmail = "test1@gmail.com";
+    await login(agent, userEmail, "test1");
+    let sportsResponse = await agent
+      .get("/sports")
+      .set("Accept", "application/json");
+    const parsedSportsResponse = JSON.parse(sportsResponse.text);
+    const latestSport =
+      parsedSportsResponse.sports[parsedSportsResponse.sports.length - 1];
+    const latestSportId = latestSport.id;
+
+    const groupedSessionResponse = await agent
+      .get(`/sport/${latestSportId}`)
+      .set("Accept", "application/json");
+    const parsedGroupedSessionResponse = JSON.parse(
+      groupedSessionResponse.text
+    );
+    const upcomingSessions = parsedGroupedSessionResponse.upcomingSessions;
+
+    const latestSession = upcomingSessions[upcomingSessions.length - 1];
+    const latestSessionId = latestSession.id;
+
+    const response = await agent.get(
+      `/sport/${latestSportId}/edit_session/${latestSessionId}`
+    );
+    const csrfToken = extractCsrfToken(response);
+    const editSessionResponse = await agent
+      .post(`/edit_session/${latestSessionId}`)
+      .send({
+        date: new Date(
+          new Date().setMonth(new Date().getMonth() + 2)
+        ).toISOString(),
+        address: "kp ground",
+        joinedPlayers: "",
+        reqPlayers: "5",
+        _csrf: csrfToken,
+      });
+    expect(editSessionResponse.statusCode).toBe(302);
+  });
 });
