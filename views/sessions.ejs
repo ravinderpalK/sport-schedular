@@ -43,8 +43,13 @@
         })
         .catch((err) => console.log(err));
     }
+    let toggle = false;
     function cancelSession() {
-      document.getElementById("cancelSession").style.display = "block";
+      if (toggle)
+        document.getElementById("cancelSession").style.display = "none";
+      else
+        document.getElementById("cancelSession").style.display = "block";
+      toggle = !toggle;
     }
 
   </script>
@@ -120,7 +125,7 @@
               </div>
               <% } %>
         </div>
-        <div class="hidden z-10" id="cancelSession">
+        <div class="hidden" id="cancelSession">
           <form action="/cancel_Session/<%= session.id %>" method="post">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
             <div class="py-2">
