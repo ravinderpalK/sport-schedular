@@ -207,7 +207,7 @@ app.post(
   "/sport/new",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const sportName = request.body.sportName;
+    const sportName = request.body.sportName.toLowerCase();
     try {
       const sport = await Sports.addSport(sportName);
       response.redirect(`/sport/${sport.id}`);
@@ -241,7 +241,8 @@ app.post(
   "/sport/:id/edit",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const sportName = request.body.sportName;
+    let sportName = request.body.sportName.toLowerCase();
+    sportName = sportName.charAt(0).toUpperCase() + sportName.slice(1);
     const id = request.params.id;
     try {
       await Sports.updateSportName(sportName, id);
