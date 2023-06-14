@@ -29,6 +29,9 @@
                 <%= joinedSessionsSport[i].name %>
                   <span> - </span>
                   <%= new Date(upcomingJoinedSessions[i].date).toString().slice(4,21) %>
+                    <% if (user.email==upcomingJoinedSessions[i].organiser) {%>
+                      <span class="text-gray-500">(Organiser)</span>
+                      <% } %>
               </a>
               <% if (!upcomingJoinedSessions[i].isCanceledReason) {%>
                 <div>
