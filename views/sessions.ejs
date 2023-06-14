@@ -70,7 +70,10 @@
       <h1 class="py-2 text-4xl text-gray-700">
         <%=sport.name%> session <span class="text-3xl">#<%= session.id%></span>
       </h1>
-      <p class="py-2 text-base">This session is scheduled for <%=session.date%>, to be played at "<%=session.address%>"
+      <p class="py-2 text-base">This session is scheduled for <%= new Date(session.date).toString().slice(4,21) %>, to
+          be played
+          at
+          "<%=session.address%>"
       </p>
       <div>
         <p class="py-2 text-2xl">Players</p>
