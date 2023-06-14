@@ -207,7 +207,8 @@ app.post(
   "/sport/new",
   connectEnsureLogin.ensureLoggedIn(),
   async (request, response) => {
-    const sportName = request.body.sportName.toLowerCase();
+    let sportName = request.body.sportName.toLowerCase();
+    sportName = sportName.charAt(0).toUpperCase() + sportName.slice(1);
     try {
       const sport = await Sports.addSport(sportName);
       response.redirect(`/sport/${sport.id}`);
