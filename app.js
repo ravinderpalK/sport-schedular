@@ -115,13 +115,22 @@ app.get(
         );
       };
       await getWithPromiseAll();
-      return response.render("sports", {
-        sports,
-        upcomingJoinedSessions,
-        joinedSessionsSport,
-        user: request.user,
-        csrfToken: request.csrfToken(),
-      });
+      if (request.accepts("html")) {
+        return response.render("sports", {
+          sports,
+          upcomingJoinedSessions,
+          joinedSessionsSport,
+          user: request.user,
+          csrfToken: request.csrfToken(),
+        });
+      } else {
+        return response.json({
+          sports,
+          upcomingJoinedSessions,
+          joinedSessionsSport,
+          user: request.user,
+        });
+      }
     } catch (err) {
       console.error(err);
     }
@@ -158,41 +167,35 @@ app.post(
   }
 );
 
-app.post(
-  "/users",
-  connectEnsureLogin.ensureLoggedIn(),
-  async (request, response) => {
-    const firstName = request.body.firstName;
-    const lastName = request.body.lastName;
-    const email = request.body.email;
-    const password = request.body.password;
-    const hashedPwd = password
-      ? await bcrypt.hash(request.body.password, saltRounds)
-      : "";
-    try {
-      const user = await Users.addUser(firstName, lastName, email, hashedPwd);
-      request.login(user, (err) => {
-        if (err) {
-          console.log(err);
-        }
-        response.redirect("/sports");
-      });
-    } catch (err) {
-      if (err.name == "SequelizeValidationError") {
-        if (!firstName) request.flash("firstName", "User Name cannot be empty");
-        if (!email) request.flash("email", "Email cannot be empty");
-        if (!password) request.flash("password", "Password cannot be empty");
-        response.redirect("/signup");
-      } else if (err.name == "SequelizeUniqueConstraintError") {
-        request.flash("email", "email is already used");
-        response.redirect("/signup");
-      } else console.log(err.name);
-    }
+app.post("/users", async (request, response) => {
+  const firstName = request.body.firstName;
+  const lastName = request.body.lastName;
+  const email = request.body.email;
+  const password = request.body.password;
+  const hashedPwd = password ? await bcrypt.hash(password, saltRounds) : "";
+  try {
+    const user = await Users.addUser(firstName, lastName, email, hashedPwd);
+    request.login(user, (err) => {
+      if (err) {
+        console.log(err);
+      }
+      response.redirect("/sports");
+    });
+  } catch (err) {
+    if (err.name == "SequelizeValidationError") {
+      if (!firstName) request.flash("firstName", "User Name cannot be empty");
+      if (!email) request.flash("email", "Email cannot be empty");
+      if (!password) request.flash("password", "Password cannot be empty");
+      response.redirect("/signup");
+    } else if (err.name == "SequelizeUniqueConstraintError") {
+      request.flash("email", "email is already used");
+      response.redirect("/signup");
+    } else console.log(err);
   }
-);
+});
 
 app.get(
-  "/sports/new",
+  "/sport/new",
   connectEnsureLogin.ensureLoggedIn(),
   requireAdmin,
   (request, response) => {
@@ -281,13 +284,22 @@ app.get(
       const previousSessions = await Sessions.getPreviousSportSessions(
         request.params.id
       );
-      response.render("sport", {
-        sport,
-        upcomingSessions,
-        previousSessions,
-        user: request.user,
-        csrfToken: request.csrfToken(),
-      });
+      if (request.accepts("html")) {
+        response.render("sport", {
+          sport,
+          upcomingSessions,
+          previousSessions,
+          user: request.user,
+          csrfToken: request.csrfToken(),
+        });
+      } else {
+        response.json({
+          sport,
+          upcomingSessions,
+          previousSessions,
+          user: request.user,
+        });
+      }
     } catch (err) {
       console.error(err);
     }
@@ -319,7 +331,7 @@ app.post(
     let joinedPlayers = request.body.playersName
       ? request.body.playersName.split(",")
       : [];
-    const reqPlayers = request.body.nPlayers;
+    const reqPlayers = request.body.reqPlayers;
     const organiser = request.user.email;
     const sportId = request.params.id;
 

@@ -195,6 +195,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       isCanceledReason: {
         type: DataTypes.STRING,
+        defaultValue: "",
       },
       sportId: {
         type: DataTypes.INTEGER,

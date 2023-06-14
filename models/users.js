@@ -5,13 +5,13 @@ module.exports = (sequelize, DataTypes) => {
     static associate(models) {
       // define association here
     }
-    static addUser(firstName, lastName, email, password) {
+    static addUser(firstName, lastName, email, password, role = "user") {
       return this.create({
         firstName,
         lastName,
         email,
         password,
-        role: "user",
+        role,
       });
     }
     static getUser(email) {
