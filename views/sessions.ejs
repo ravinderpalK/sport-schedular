@@ -109,7 +109,8 @@
                     <% } %>
         </div>
         <div class="py-2">
-          <% if (user.email==session.organiser && (!session.isCanceledReason)) {%>
+          <% if (user.email==session.organiser && (!session.isCanceledReason) && (session.date>new
+            Date().toISOString()) ) {%>
             <div>
               <a href="/sport/<%= sport.id %>/edit_session/<%= session.id %>" class="underline py-2 text-blue-800">Edit
                 Session</a>
