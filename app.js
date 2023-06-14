@@ -503,10 +503,35 @@ app.post(
     const reqPlayers = request.body.nPlayers;
     const id = request.params.id;
     try {
+      const getWithPromiseAll = async () => {
+        joinedPlayers = await Promise.all(
+          joinedPlayers.map(async (email) => {
+            const user = await Users.getUser(email);
+            return user ? user.email : null;
+          })
+        );
+      };
+      await getWithPromiseAll();
       await Sessions.editSession(date, address, joinedPlayers, reqPlayers, id);
       response.redirect(`/sessions/${id}`);
     } catch (err) {
-      console.error(err);
+      if (err.name == "SequelizeValidationError") {
+        if (!date) request.flash("date", "Add Date and Time of the session");
+        if (!address) request.flash("address", "Add location of the session");
+        if (!reqPlayers)
+          request.flash(
+            "req_players",
+            "Add No. of required players for the session"
+          );
+        if (err.message == "Validation error: Email not valid") {
+          request.flash("email", "All Emails are not valid");
+        }
+        const session = await Sessions.getSession(id);
+        const sport = await Sports.getSport(session.sportId);
+        response.redirect(`/sport/${sport.id}/edit_session/${id}`);
+      } else {
+        console.log(err.name);
+      }
     }
   }
 );
